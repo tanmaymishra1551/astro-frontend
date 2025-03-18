@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
-
+console.log (`API_BASE_URL is ${API_BASE_URL}`)
 const UserDashboard = () => {
     const { user } = useSelector((state) => state.auth);
     const [astrologers, setAstrologers] = useState([]);
