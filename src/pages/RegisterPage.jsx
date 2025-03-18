@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+const API_BASE_URL = import.meta.env.NEXT_PUBLIC_API_BASE_URL;
 
 function RegisterPage() {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch("/api/auth/register", {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
