@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-const API_BASE_URL = import.meta.env.NEXT_PUBLIC_API_BASE_URL;
 
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
+console.log(`API_BASE_URL: ${API_BASE_URL}`);
 function RegisterPage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
