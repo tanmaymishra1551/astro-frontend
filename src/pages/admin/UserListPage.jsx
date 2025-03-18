@@ -1,6 +1,7 @@
 // src/pages/UserListPage.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const UserListPage = () => {
     const [users, setUsers] = useState([]);
@@ -20,7 +21,7 @@ const UserListPage = () => {
         if (statusFilter) queryParams.append('status', statusFilter);
 
         try {
-            const response = await fetch(`/api/admin/users/?${queryParams.toString()}`);
+            const response = await fetch(`${API_BASE_URL}/admin/users/?${queryParams.toString()}`);
             const result = await response.json();
             if (result.success) {
                 setUsers(result.data);

@@ -1,6 +1,7 @@
 // src/components/DeleteUserButton.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const DeleteUserButton = ({ userId }) => {
     const navigate = useNavigate();
@@ -10,7 +11,7 @@ const DeleteUserButton = ({ userId }) => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
         setLoading(true);
         try {
-            const response = await fetch(`/api/admin/users/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
                 method: 'DELETE',
             });
             if (!response.ok) {

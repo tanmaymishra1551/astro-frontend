@@ -5,6 +5,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { v4 as uuidv4 } from 'uuid';
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const BookingDetail = () => {
     const { id } = useParams(); // This is the astrologer ID.
@@ -42,7 +43,7 @@ const BookingDetail = () => {
         setLoadingSlots(true);
         setError(null);
         try {
-            const response = await fetch('/api/booking/astrologer/available-slots', {
+            const response = await fetch(`${API_BASE_URL}/booking/astrologer/available-slots`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -83,7 +84,7 @@ const BookingDetail = () => {
             };
             console.log('Booking payload:', bookingPayload);
 
-            const response = await fetch('/api/booking/create', {
+            const response = await fetch(`${API_BASE_URL}/booking/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bookingPayload)

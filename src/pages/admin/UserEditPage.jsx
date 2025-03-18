@@ -1,6 +1,7 @@
 // src/pages/UserEditPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const UserEditPage = () => {
     const { id } = useParams();
@@ -20,7 +21,7 @@ const UserEditPage = () => {
 
     const fetchUserDetail = async () => {
         try {
-            const response = await fetch(`/api/admin/users/${id}`);
+            const response = await fetch(`${API_BASE_URL}/admin/users/${id}`);
             const data = await response.json();
             console.log('User:', data.data.fullname);
             // Assuming the API returns user data with the key 'fullname'
@@ -50,7 +51,7 @@ const UserEditPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch(`/api/admin/users/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

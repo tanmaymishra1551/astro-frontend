@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const UserDashboard = () => {
     const { user } = useSelector((state) => state.auth);
@@ -14,7 +15,7 @@ const UserDashboard = () => {
     useEffect(() => {
         const fetchAstrologers = async () => {
             try {
-                const response = await fetch("/api/dashboard/astrologer", {
+                const response = await fetch(`${API_BASE_URL}/dashboard/astrologer`, {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },
                 });

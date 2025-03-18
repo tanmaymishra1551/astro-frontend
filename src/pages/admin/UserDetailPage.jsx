@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import UserStatusToggle from '../../components/UserStatusToggle.jsx';
 import DeleteUserButton from '../../components/DeleteUserButton.jsx';
 import ResetPasswordButton from '../../components/ResetPasswordButton.jsx';
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const UserDetailPage = () => {
     const { id } = useParams();
@@ -15,7 +16,7 @@ const UserDetailPage = () => {
 
     const fetchUserDetail = async () => {
         try {
-            const response = await fetch(`/api/admin/users/${id}`);
+            const response = await fetch(`${API_BASE_URL}/admin/users/${id}`);
             const data = await response.json();
             setUser(data);
         } catch (error) {

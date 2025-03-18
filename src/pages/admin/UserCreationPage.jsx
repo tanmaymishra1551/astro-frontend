@@ -1,6 +1,7 @@
 // src/pages/UserCreationPage.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const UserCreationPage = () => {
     const navigate = useNavigate();
@@ -30,7 +31,7 @@ const UserCreationPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('/api/admin/users/', {
+            const response = await fetch(`${API_BASE_URL}/admin/users/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/slices/authSlice.js';
 import { useNavigate } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const LoginPage = () => {
     const [form, setForm] = useState({ username: '', password: '' });
@@ -18,7 +19,7 @@ const LoginPage = () => {
         setError(null); // Reset previous errors
 
         try {
-            const response = await fetch('/api/auth/login/', {
+            const response = await fetch(`${API_BASE_URL}/auth/login/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
