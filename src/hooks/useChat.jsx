@@ -9,7 +9,7 @@ const useChat = (roomId, currentUser, receiverId) => {
     useEffect(() => {
         if (!roomId) return;
 
-        socketRef.current = io(import.meta.env.VITE_SOCKET_URI, {
+        socketRef.current = io(import.meta.env.VITE_PUBLIC_API_BASE_URL, {
             path: '/ws/chat',
             query: { token: localStorage.getItem('token') },
         });
