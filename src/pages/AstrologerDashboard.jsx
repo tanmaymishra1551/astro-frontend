@@ -24,11 +24,10 @@ const AstrologerDashboard = () => {
     const nextSlide = () => setIndex((prev) => (prev + 1) % clients.length);
     const prevSlide = () => setIndex((prev) => (prev - 1 + clients.length) % clients.length);
 
-    const visibleClients = [
-        clients[index],
-        clients[(index + 1) % clients.length],
-        clients[(index + 2) % clients.length],
-    ];
+    const visibleClients = clients.length >= 3
+        ? [clients[index], clients[(index + 1) % clients.length], clients[(index + 2) % clients.length]]
+        : clients;
+
 
     return (
         <div className="max-w-5xl mx-auto p-6">
@@ -60,9 +59,10 @@ const AstrologerDashboard = () => {
                         <ChevronLeft size={30} />
                     </button>
                     <div className="flex gap-6 overflow-hidden w-full justify-center">
-                        {visibleClients.map((client) => (
-                            <ClientCard key={client?.id} client={client} />
+                        {visibleClients.map((client, idx) => (
+                            <ClientCard key={`${client?.id}-${idx}`} client={client} />
                         ))}
+
                     </div>
                     <button onClick={nextSlide} className="absolute right-0 z-10 p-3 bg-gray-200 hover:bg-gray-300 rounded-full">
                         <ChevronRight size={30} />

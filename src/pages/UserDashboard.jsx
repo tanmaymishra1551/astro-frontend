@@ -42,11 +42,10 @@ const UserDashboard = () => {
         setIndex((prevIndex) => (prevIndex - 1 + astrologers.length) % astrologers.length);
     };
 
-    const visibleAstrologers = [
-        astrologers[index],
-        astrologers[(index + 1) % astrologers.length],
-        astrologers[(index + 2) % astrologers.length],
-    ];
+    const visibleastrologers = astrologers.length >= 3 
+    ? [astrologers[index], astrologers[(index + 1) % astrologers.length], astrologers[(index + 2) % astrologers.length]]
+    : astrologers;
+
 
     return (
         <div className="max-w-5xl mx-auto p-6">
@@ -68,7 +67,7 @@ const UserDashboard = () => {
 
                     {/* Cards Container */}
                     <div className="flex gap-6 overflow-hidden w-full justify-center">
-                        {visibleAstrologers.map((ast, idx) =>
+                        {visibleastrologers.map((ast, idx) =>
                             ast ? (
                                 <motion.div
                                     key={ast.id}

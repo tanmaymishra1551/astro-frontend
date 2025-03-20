@@ -31,7 +31,7 @@ const useChat = (roomId, currentUser, receiverId) => {
             senderId: currentUser.id,
             receiverId,
             message,
-            timestamp: new Date(),
+            timestamp: Date.now(),
         };
         socketRef.current.emit('sendMessage', messageData);
     };

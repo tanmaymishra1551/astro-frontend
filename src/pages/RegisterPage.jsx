@@ -29,17 +29,10 @@ function RegisterPage() {
             });
             const data = await response.json();
             if (response.ok) {
-                // console.log("Registration successful:", data);
-                // Redirect based on user role
-                if (formData.role === "user") {
-                    navigate("/user-dashboard");
-                } else if (formData.role === "astrologer") {
-                    navigate("/astrologer-dashboard");
-                } else if (formData.role === "admin") {
-                    navigate("/admin-dashboard");
-                }
+                console.log("Registration successful:");
+                navigate("/login"); // Redirect to login page
             } else {
-                console.error("Registration failed:", data);
+                console.error("Registration failed:");
                 // Handle errors (e.g., show error messages to the user)
             }
         } catch (error) {
