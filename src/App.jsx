@@ -1,6 +1,8 @@
 // src/App.jsx
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import ProfilePage from './pages/ProfilePage.jsx';
+import SupportPage from './pages/SupportPage.jsx';
 
 const HomePage = lazy(() => import('./pages/HomePage.jsx'));
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
@@ -26,6 +28,8 @@ const publicRoutes = [
 
 const protectedRoutes = [
   { path: '/user-dashboard', element: <UserDashboard /> },
+  { path: '/support', element: <SupportPage /> },
+  { path: '/profile', element: <ProfilePage /> },
   { path: '/astrologer-dashboard', element: <AstrologerDashboard /> },
   { path: '/admin-dashboard', element: <AdminDashboard /> },
   { path: '/booking/:id', element: <BookingDetail /> },
