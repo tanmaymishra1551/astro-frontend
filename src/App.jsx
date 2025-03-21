@@ -36,7 +36,7 @@ const protectedRoutes = [
 
 function App() {
   return (
-    <div className="container mx-auto p-4">
+    <div>
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           {publicRoutes.map(({ path, element }) => (
