@@ -5,15 +5,18 @@ import UserListPage from './UserListPage.jsx';
 import UserDetailPage from './UserDetailPage.jsx';
 import UserCreationPage from './UserCreationPage.jsx';
 import UserEditPage from './UserEditPage.jsx';
+import Layout from '../Layout.jsx';
 
 function UserManagement() {
     return (
-        <Routes>
-            <Route path="users" element={<UserListPage />} />
-            <Route path="users/create" element={<UserCreationPage />} />
-            <Route path="users/:id" element={<UserDetailPage />} />
-            <Route path="users/:id/edit" element={<UserEditPage />} />
-        </Routes>
+        <Layout>
+            <Routes>
+                <Route path="users" element={<UserListPage />} />
+                <Route path="users/create" element={<UserCreationPage />} />
+                <Route path="users/:id" element={<UserDetailPage />} />
+                <Route path="users/:id/edit" element={<UserEditPage />} />
+            </Routes>
+        </Layout>
     );
 }
 
