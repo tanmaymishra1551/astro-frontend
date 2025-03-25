@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const LoginPage = () => {
-    const [form, setForm] = useState({ username: "", password: "" });
+    const [form, setForm] = useState({ phone: "", password: "" }); // Updated to phone instead of username
     const [error, setError] = useState(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -69,8 +69,8 @@ const LoginPage = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {[
-                        { name: "username", placeholder: "Username", icon: "🔹", type: "text" },
+                    {[  
+                        { name: "phone", placeholder: "Phone Number", icon: "📞", type: "tel" }, // Changed to phone
                         { name: "password", placeholder: "Password", icon: "🔑", type: "password" },
                     ].map(({ name, placeholder, icon, type }) => (
                         <div key={name} className="relative group">

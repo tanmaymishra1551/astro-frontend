@@ -9,6 +9,7 @@ function RegisterPage() {
     const [formData, setFormData] = useState({
         fullname: "",
         email: "",
+        phone: "",  // Added phone field
         username: "",
         password: "",
         role: "user",
@@ -57,6 +58,7 @@ function RegisterPage() {
                     {[
                         { name: "fullname", placeholder: "Full Name", icon: "👤", type: "text" },
                         { name: "email", placeholder: "Email", icon: "📧", type: "email" },
+                        { name: "phone", placeholder: "Phone Number", icon: "📞", type: "tel" }, // Added phone field
                         { name: "username", placeholder: "Username", icon: "🔹", type: "text" },
                         { name: "password", placeholder: "Password", icon: "🔑", type: "password" },
                     ].map(({ name, placeholder, icon, type }) => (
