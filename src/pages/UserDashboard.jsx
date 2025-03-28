@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
-console.log (`API_BASE_URL is ${API_BASE_URL}`)
+
 const UserDashboard = () => {
     const { user } = useSelector((state) => state.auth);
+    const userName = user.user.username;
     const [astrologers, setAstrologers] = useState([]);
     const [index, setIndex] = useState(0); 
     const [loading, setLoading] = useState(true);
@@ -49,7 +50,7 @@ const UserDashboard = () => {
 
     return (
         <div className="max-w-5xl mx-auto p-6">
-            <h2 className="text-3xl font-bold mb-6 text-center">{user?.username}'s Dashboard</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center">{userName}'s Dashboard</h2>
 
             {loading ? (
                 <p className="text-center text-gray-500">Loading...</p>

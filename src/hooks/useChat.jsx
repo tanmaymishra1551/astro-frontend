@@ -1,24 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 import { toast } from 'react-toastify';
 
 const useChat = (roomId, currentUser, receiverId) => {
     const [messages, setMessages] = useState([]);
     const socketRef = useRef();
+    const token = useSelector((state) => state.auth.token);
+
 
     useEffect(() => {
+        // console.log(`Room id is ${roomId}`)
         if (!roomId) return;
 
         socketRef.current = io(import.meta.env.VITE_PUBLIC_API_BASE_URL, {
             path: '/ws/chat',
-            query: { token: localStorage.getItem('token') },
+            auth: { token },
+            transports: ['websocket']
         });
 
+        socketRef.current.on("connect", () => console.log("Connected to WebSocket"));
+        socketRef.current.on("connect_error", (err) => console.error("WebSocket connection error:", err));
         socketRef.current.emit('joinRoom', { roomId });
 
         socketRef.current.on('receiveMessage', (data) => {
             if (data.senderId !== currentUser.id) toast.info('New message received');
-            setMessages((prev) => [...prev, data]);
+                setMessages((prev) => [...prev, data]);
         });
 
         return () => socketRef.current.disconnect();
@@ -28,7 +35,7 @@ const useChat = (roomId, currentUser, receiverId) => {
         if (!message.trim()) return;
         const messageData = {
             roomId,
-            senderId: currentUser.id,
+            senderId: currentUser.user.id,
             receiverId,
             message,
             timestamp: Date.now(),

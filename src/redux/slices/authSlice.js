@@ -2,9 +2,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  token: localStorage.getItem("token") || null,
+  token: null,
   user: null,
-  astrologer: null, // New field for astrologer users
+  astrologer: null, 
 };
 
 const authSlice = createSlice({
@@ -12,15 +12,15 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginSuccess(state, action) {
-      const user = action.payload.data.user;
-      state.token = action.payload.data.jwtToken;
-      localStorage.setItem("token", action.payload.data.jwtToken);
+
+      const loggedUser = action.payload;
+      state.token = loggedUser.accessToken;
       // Segregate user based on role
-      if (user.role === "astrologer") {
-        state.astrologer = user;
+      if (loggedUser.user.role === "astrologer") {
+        state.astrologer = loggedUser.user;
         state.user = null;
       } else {
-        state.user = user;
+        state.user = loggedUser;
         state.astrologer = null;
       }
     },

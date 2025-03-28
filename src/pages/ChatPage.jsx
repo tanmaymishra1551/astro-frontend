@@ -13,10 +13,11 @@ const ChatPage = () => {
 
     const [input, setInput] = useState('');
     const [astrologerId, userId] = id.split('_').slice(1);
-    const receiverId = currentUser.id === astrologerId ? userId : astrologerId;
+    const receiverId = currentUser?.user ? currentUser.user.id : currentUser.id;
     const roomId = id;
 
     const { messages, sendMessage } = useChat(roomId, currentUser, receiverId);
+    console.log(`Messages are is ${messages}`) //Messages are is asdf,asdf,m,m
     const { selectedFile, previewUrl, handleFileChange, uploadFile } = useFileUpload();
 
     return (
@@ -46,7 +47,7 @@ const ChatPage = () => {
                 </div>
             </header>
             <div className="p-4 border rounded shadow-lg">
-                <h2 className="text-2xl font-bold mb-4">Chat with Astrologer (User: {currentUser.id})</h2>
+                <h2 className="text-2xl font-bold mb-4">Chat with Astrologer (User: {receiverId})</h2>
 
                 {/* Chat Messages */}
                 <div className="h-64 border p-2 mb-4 overflow-y-auto">

@@ -143,7 +143,7 @@ const AstrologerDashboard = () => {
                     onClick={() => setIsNotificationOpen(false)}
                 >
                     <div
-                        className="w-[90%] md:w-80 max-w-lg bg-[#1e0138] shadow-lg p-4 rounded-lg text-white md:mr-4"
+                        className="h-screenw-[90%] md:w-80 max-w-lg bg-[#1e0138] shadow-lg p-4 rounded-lg text-white md:mr-4"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Close Button */}
@@ -156,7 +156,7 @@ const AstrologerDashboard = () => {
                         </div>
 
                         {/* Unread Messages Inside Sidebar */}
-                        <div className="mt-3 space-y-3">
+                        <div className="mt-3 pb-10 space-y-3 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
                             {unreadMessages.length > 0 ? (
                                 unreadMessages.map((msg) => (
                                     <div key={msg._id} className="bg-[#2c024b] p-3 rounded-lg space-y-2">

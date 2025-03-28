@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import defaultImage from '../assets/adaptive-icon.png';
 
 const ClientCard = ({ client }) => {
     if (!client) return null;
@@ -12,7 +13,7 @@ const ClientCard = ({ client }) => {
             className="bg-[#1e0138] shadow-lg rounded-lg p-4 w-64 flex-shrink-0 text-yellow-400 border border-yellow-400"
         >
             <img
-                src={client.profilePicture || "https://via.placeholder.com/150"}
+                src={client.profilePicture || defaultImage}
                 alt={client.name}
                 className="w-full h-40 object-cover rounded-lg mb-4 border border-yellow-400"
             />
