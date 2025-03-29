@@ -13,18 +13,22 @@ const AstrologerDashboard = () => {
     const [viewProfile, setViewProfile] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     
-    const { astrologer } = useSelector((state) => state.auth);
+    const  astrologer  = useSelector((state) => state.auth);
+    // console.log(`Logged in user is ${JSON.stringify(astrologer.loggedIn.id)}`)
     const { clients, loading, error } = useClients();
-    const { unreadMessages, socketRef, markAsRead } = useSocket(astrologer.id);
+    const { unreadMessages, socket, markAsRead } = useSocket(astrologer.loggedIn.id);
     
     const navigate = useNavigate();
     const [index, setIndex] = useState(0);
 
     // Navigate to chat on clicking an unread message
     const handleReply = (message) => {
-        if (socketRef.current && message.roomId) {
-            socketRef.current.emit("joinRoom", { roomId: message.roomId });
-            navigate(`/chat/${message.roomId}`);
+        // console.log(`Message is ${JSON.stringify(message)}`)
+        const senderId = message.senderId
+        // console.log(`Sender id from astrologer side is ${senderId}`)
+        if (socket && message.roomId) {
+            socket.emit("joinRoom", { roomId: message.roomId });
+            navigate(`/chat/${message.roomId}`, {state:{senderId}});
             setIsNotificationOpen(false);
         }
     };
@@ -48,7 +52,7 @@ const AstrologerDashboard = () => {
             {/* Header */}
             <header className="bg-[#1e0138] shadow p-4 flex justify-between items-center relative">
                 <div className="text-lg font-semibold text-yellow-400">
-                    Welcome {astrologer.fullname}
+                    Welcome {astrologer.loggedIn.fullname}
                 </div>
 
                 {/* Icons */}

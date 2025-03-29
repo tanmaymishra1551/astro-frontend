@@ -10,8 +10,9 @@ const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 const BookingDetail = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const { id } = useParams();
-    const user = useSelector((state) => state.auth);
-    const userID = user.user.user.id;
+    // console.log(`Astrloger id from user dasboard page is ${id}`);
+    const user  = useSelector((state) => state.auth);
+    const userID = user.loggedIn.id;
     const [booking, setBooking] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
     const [availableSlots, setAvailableSlots] = useState([]);
@@ -182,6 +183,7 @@ const BookingDetail = () => {
                 <div className="mt-4 flex space-x-4">
                     <Link
                         to={`/chat/chat_${booking.astrologerId}_${userID}`}
+                        state={{ astrologerId: booking.astrologerId }}
                         className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
                     >
                         Open Chat

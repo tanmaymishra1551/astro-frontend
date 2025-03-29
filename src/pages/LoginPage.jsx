@@ -29,7 +29,7 @@ const LoginPage = () => {
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || "Login failed");
 
-            dispatch(loginSuccess(result.data));
+            dispatch(loginSuccess(result.data.user));
 
             const dashboardRoutes = {
                 user: "/user-dashboard",

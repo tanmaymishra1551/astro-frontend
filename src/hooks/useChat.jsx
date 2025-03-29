@@ -7,7 +7,7 @@ const useChat = (roomId, currentUser, receiverId) => {
     const [messages, setMessages] = useState([]);
     const socketRef = useRef();
     const token = useSelector((state) => state.auth.token);
-
+    // console.log(`${token}`)
 
     useEffect(() => {
         // console.log(`Room id is ${roomId}`)
@@ -24,8 +24,9 @@ const useChat = (roomId, currentUser, receiverId) => {
         socketRef.current.emit('joinRoom', { roomId });
 
         socketRef.current.on('receiveMessage', (data) => {
+            // console.log(`Client user id is ${JOSN.stringify(currentUser)} and server user id is ${data.senderId}`)
             if (data.senderId !== currentUser.id) toast.info('New message received');
-                setMessages((prev) => [...prev, data]);
+            setMessages((prev) => [...prev, data]);
         });
 
         return () => socketRef.current.disconnect();

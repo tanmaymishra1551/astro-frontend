@@ -6,8 +6,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const UserDashboard = () => {
-    const { user } = useSelector((state) => state.auth);
-    const userName = user.user.username;
+    const user  = useSelector((state) => state.auth);
+    const userName = user.loggedIn.username;
     const [astrologers, setAstrologers] = useState([]);
     const [index, setIndex] = useState(0); 
     const [loading, setLoading] = useState(true);

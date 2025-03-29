@@ -3,8 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   token: null,
-  user: null,
-  astrologer: null, 
+  loggedIn: null,
 };
 
 const authSlice = createSlice({
@@ -14,20 +13,13 @@ const authSlice = createSlice({
     loginSuccess(state, action) {
 
       const loggedUser = action.payload;
+      // console.log(`Logged User is ${JSON.stringify(loggedUser)}`)
       state.token = loggedUser.accessToken;
-      // Segregate user based on role
-      if (loggedUser.user.role === "astrologer") {
-        state.astrologer = loggedUser.user;
-        state.user = null;
-      } else {
-        state.user = loggedUser;
-        state.astrologer = null;
-      }
+      state.loggedIn = loggedUser
     },
     logout(state) {
       state.token = null;
-      state.user = null;
-      state.astrologer = null;
+      state.loggedIn = null;
       localStorage.removeItem("token");
     },
   },

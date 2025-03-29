@@ -1,23 +1,88 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import useChat from '../hooks/useChat.jsx';
+import { io } from 'socket.io-client';
+import { toast } from 'react-toastify';
+import { useParams } from 'react-router-dom';
 import { FaUserCircle, FaBell } from "react-icons/fa";
 import useFileUpload from '../hooks/useFileUpload.jsx';
+import { useLocation } from "react-router-dom";
 
+// Custom Hook for WebSocket Chat
+const useChat = (roomId, senderID, receiverID) => {
+    // const location = useLocation();
+    // const astrologerId = location.state?.astrologerId;
+    // const senderId = location.state?.senderId;
+    // console.log(`From astrologer side senderId is ${senderId}`)
+    // console.log(`Getting astrologer id from booking page is ${astrologerId}`)
+    const [messages, setMessages] = useState([]);
+    const socketRef = useRef();
+    const loggedIn = useSelector((state) => state.auth);
+    const loggedInToken = loggedIn.loggedIn.accessToken;
+    // console.log(`Logged in user token ${loggedInToken}`)
+    useEffect(() => {
+        if (!roomId) return;
+
+        socketRef.current = io(import.meta.env.VITE_PUBLIC_API_BASE_URL, {
+            path: '/ws/chat',
+            auth: { loggedInToken },
+            transports: ['websocket']
+        });
+
+        socketRef.current.on("connect", () => console.log("Connected to WebSocket"));
+        socketRef.current.on("connect_error", (err) => console.error("WebSocket connection error:", err));
+        socketRef.current.emit('joinRoom', { roomId });
+
+        socketRef.current.on('receiveMessage', (data) => {
+            // console.log(`Receive message is  ${JSON.stringify(data)}`);
+            if (data.senderId !== senderID) {
+                toast.info('New message received');
+                setMessages((prev) => [...prev, data]);
+            }
+        });
+
+        return () => socketRef.current.disconnect();
+    }, [roomId, senderID]);
+
+    const sendMessage = (message) => {
+        if (!message.trim()) return;
+        // console.log(`Message in sendMessage is ${message}`)
+        const messageData = {
+            roomId,
+            senderID,
+            receiverID,
+            message,
+            timestamp: Date.now(),
+        };
+        // console.log(`Message that is send to server is ${JSON.stringify(messageData)}`)
+        socketRef.current.emit('sendMessage', messageData);
+    };
+
+
+    return { messages, sendMessage };
+};
+
+// Chat Page Component
 const ChatPage = () => {
+    const location = useLocation();
+    const astrologerIdFromBooking = location.state?.astrologerId; // role: user
+    const astrologerIdFromAstDash = location.state?.senderId;                    // role:astrologer
+    const [input, setInput] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const { id } = useParams();
-    const { user, astrologer } = useSelector((state) => state.auth);
-    const currentUser = user || astrologer;
+    const chatRoomId = id;
+    const loggedIn = useSelector((state) => state.auth);
+    const loggedInPersonRole = loggedIn.loggedIn.role;
+    const loggedInPersonId = loggedIn.loggedIn.id;
 
-    const [input, setInput] = useState('');
-    const [astrologerId, userId] = id.split('_').slice(1);
-    const receiverId = currentUser?.user ? currentUser.user.id : currentUser.id;
-    const roomId = id;
+    const senderID = loggedInPersonId;
+    const receiverID = loggedInPersonRole == "user" ? astrologerIdFromBooking : astrologerIdFromAstDash
 
-    const { messages, sendMessage } = useChat(roomId, currentUser, receiverId);
-    console.log(`Messages are is ${messages}`) //Messages are is asdf,asdf,m,m
+    // console.log(`🚀 Sender ID: ${senderID}, Receiver ID: ${receiverID}`);
+
+    // Use Chat Hook
+    const { messages, sendMessage } = useChat(chatRoomId, senderID, receiverID);
+    // console.log(`Message is ${JSON.stringify(messages)}`)
+    // File Upload Hook
     const { selectedFile, previewUrl, handleFileChange, uploadFile } = useFileUpload();
 
     return (
@@ -27,10 +92,7 @@ const ChatPage = () => {
                 <div className="text-lg font-semibold text-yellow-400">Welcome</div>
 
                 <div className="flex items-center gap-4">
-                    {/* Notifications */}
                     <FaBell className="text-2xl text-yellow-400 cursor-pointer hover:text-yellow-300" />
-
-                    {/* Profile Section */}
                     <div className="relative">
                         <FaUserCircle
                             className="text-3xl text-yellow-400 cursor-pointer hover:text-yellow-300"
@@ -46,16 +108,18 @@ const ChatPage = () => {
                     </div>
                 </div>
             </header>
-            <div className="p-4 border rounded shadow-lg">
-                <h2 className="text-2xl font-bold mb-4">Chat with Astrologer (User: {receiverId})</h2>
 
-                {/* Chat Messages */}
+            {/* Chat Section */}
+            <div className="p-4 border rounded shadow-lg">
+                <h2 className="text-2xl font-bold mb-4">Chat with Astrologer (User: {receiverID})</h2>
+
+                {/* Messages */}
                 <div className="h-64 border p-2 mb-4 overflow-y-auto">
                     {messages.length === 0 && <p className="text-gray-500">No messages yet. Start the conversation!</p>}
                     {messages.map((msg, index) => (
                         <div key={index} className="mb-2 p-2 bg-gray-100 rounded">
                             <p className="text-sm text-gray-600">
-                                <span className="font-bold">{msg.senderId}</span> at{" "}
+                                <span className="font-bold">{msg.senderID}</span> at{" "}
                                 {new Date(msg.timestamp).toLocaleTimeString()}
                             </p>
                             {msg.message && <p>{msg.message}</p>}
@@ -71,7 +135,7 @@ const ChatPage = () => {
                     ))}
                 </div>
 
-                {/* Message Input and File Upload */}
+                {/* Input and File Upload */}
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
