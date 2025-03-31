@@ -16,7 +16,8 @@ const PaymentPage = lazy(() => import('./pages/PaymentPage.jsx'));
 const UserManagement = lazy(() => import('./pages/admin/UserManagement.jsx'));
 
 function PrivateRoute({ element }) {
-  const isAuthenticated = localStorage.getItem('token');
+  const loggedIn = useSelector((state) => state.auth);
+  const isAuthenticated = loggedIn.loggedIn.accessToken;
   return isAuthenticated ? element : <Navigate to="/login" />;
 }
 
