@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProfilePage from './pages/ProfilePage.jsx';
 import SupportPage from './pages/SupportPage.jsx';
+import { useSelector } from 'react-redux';
 
 const HomePage = lazy(() => import('./pages/HomePage.jsx'));
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
