@@ -6,20 +6,29 @@ import { useClients } from "../hooks/useClients.jsx";
 import { useSocket } from "../hooks/useSocket.jsx";
 import ClientCard from "../components/ClientCard.jsx";
 import { FaUserCircle, FaBell } from "react-icons/fa";
+import { useEffect } from "react";
 import Profile from "./ProfilePage.jsx";
 
 const AstrologerDashboard = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [viewProfile, setViewProfile] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-    
-    const  astrologer  = useSelector((state) => state.auth);
+
+    const astrologer = useSelector((state) => state.auth);
     // console.log(`Logged in user is ${JSON.stringify(astrologer.loggedIn.id)}`)
     const { clients, loading, error } = useClients();
     const { unreadMessages, socket, markAsRead } = useSocket(astrologer.loggedIn.id);
-    
     const navigate = useNavigate();
     const [index, setIndex] = useState(0);
+
+    useEffect(() => {
+        if (socket && astrologer?.loggedIn?.id) {
+            socket.emit("toggle-online-visibility", {
+                id: astrologer.loggedIn.id,
+                showOnline: true,
+            });
+        }
+    }, [socket, astrologer.loggedIn.id]);
 
     // Navigate to chat on clicking an unread message
     const handleReply = (message) => {
@@ -28,7 +37,7 @@ const AstrologerDashboard = () => {
         // console.log(`Sender id from astrologer side is ${senderId}`)
         if (socket && message.roomId) {
             socket.emit("joinRoom", { roomId: message.roomId });
-            navigate(`/chat/${message.roomId}`, {state:{senderId}});
+            navigate(`/chat/${message.roomId}`, { state: { senderId } });
             setIsNotificationOpen(false);
         }
     };
@@ -120,13 +129,13 @@ const AstrologerDashboard = () => {
                                         <ChevronLeft size={30} />
                                     </button>
                                 )}
-                                
+
                                 <div className="flex gap-6 overflow-hidden w-full justify-center">
                                     {visibleClients.map((client, idx) => (
                                         <ClientCard key={`${client?.id}-${idx}`} client={client} />
                                     ))}
                                 </div>
-                                
+
                                 {clients.length > 1 && (
                                     <button onClick={nextSlide} className="absolute right-0 z-10 p-3 bg-gray-200 hover:bg-gray-300 rounded-full">
                                         <ChevronRight size={30} />

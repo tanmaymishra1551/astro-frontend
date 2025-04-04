@@ -32,6 +32,7 @@ const useChat = (roomId, senderID, receiverID) => {
         socketRef.current.on("connect_error", (err) => console.error("WebSocket connection error:", err));
         socketRef.current.emit('joinRoom', { roomId });
 
+        // MESSAGE GETTING FROM SERVER
         socketRef.current.on('receiveMessage', (data) => {
             // console.log(`Receive message is  ${JSON.stringify(data)}`);
             if (data.senderId !== senderID) {

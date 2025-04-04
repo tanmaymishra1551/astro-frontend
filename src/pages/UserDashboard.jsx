@@ -2,18 +2,22 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSocket } from "../hooks/useSocket.jsx";
 
 const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
 const UserDashboard = () => {
     const user = useSelector((state) => state.auth);
     const userName = user?.loggedIn?.username || "User";
+    const userID = user?.loggedIn?.id || null;
     const [astrologers, setAstrologers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const { socket } = useSocket(userID);
 
     useEffect(() => {
+
         const fetchAstrologers = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/dashboard/astrologer`);
@@ -28,6 +32,33 @@ const UserDashboard = () => {
         };
         fetchAstrologers();
     }, []);
+
+    useEffect(() => {
+        if (socket && user?.loggedIn?.role === "user") {
+            socket.emit("getOnlineAstrologers");
+
+            socket.on("onlineAstrologersList", (onlineList) => {
+                console.log("Online astrologers:", onlineList);
+                // You can mark astrologers online in the list
+                setAstrologers((prev) =>
+                    prev.map((ast) => ({
+                        ...ast,
+                        isOnline: onlineList.some((online) => online.id == ast.id),
+                    }))
+                );
+            });
+
+            // Optional: Listen for real-time changes
+            socket.on("astrologer-status-update", ({ id, status }) => {
+                setAstrologers((prev) =>
+                    prev.map((ast) =>
+                        ast.id === id ? { ...ast, isOnline: status === "online" } : ast
+                    )
+                );
+            });
+        }
+    }, [socket]);
+
 
     // Responsive Breakpoints
     const getSlideSize = () => {
@@ -56,6 +87,9 @@ const UserDashboard = () => {
             <h2 className="text-3xl font-bold text-center text-yellow-400 mb-6">
                 {userName}'s Dashboard
             </h2>
+
+
+
 
             {/* Loading and Error Handling */}
             {loading ? (
@@ -100,6 +134,9 @@ const UserDashboard = () => {
                                             <div className="mt-4 text-center">
                                                 <h3 className="text-xl text-yellow-400 font-semibold">{ast.fullname}</h3>
                                                 <p className="text-sm text-gray-400">{ast.specialty || "Specialty not available"}</p>
+                                                <p className="text-sm text-green-400 font-medium">
+                                                    {ast.isOnline ? "Online" : "Offline"}
+                                                </p>
                                                 <Link
                                                     to={`/booking/${ast.id}`}
                                                     className="mt-4 inline-block bg-yellow-500 text-black py-2 px-4 rounded-lg hover:bg-yellow-600 transition"
@@ -137,9 +174,8 @@ const UserDashboard = () => {
                             <button
                                 key={index}
                                 onClick={() => setCurrentSlide(index)}
-                                className={`h-3 w-3 mx-1 rounded-full ${
-                                    index === currentSlide ? "bg-yellow-500" : "bg-gray-500"
-                                }`}
+                                className={`h-3 w-3 mx-1 rounded-full ${index === currentSlide ? "bg-yellow-500" : "bg-gray-500"
+                                    }`}
                             />
                         ))}
                     </div>

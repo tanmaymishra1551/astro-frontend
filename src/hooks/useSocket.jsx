@@ -5,10 +5,11 @@ import { useSelector } from "react-redux";
 
 export const useSocket = (astrologerId) => {
     const [unreadMessages, setUnreadMessages] = useState([]);
+    const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
     const loggedIn = useSelector((state) => state.auth);
     const loggedInToken = loggedIn.loggedIn.accessToken;
-    console.log()
+    const loggedInUserRole = loggedIn.loggedIn.role;
 
     useEffect(() => {
         if (!astrologerId || !loggedInToken) return;
@@ -23,6 +24,28 @@ export const useSocket = (astrologerId) => {
 
         socket.on("connect", () => console.log("Connected to WebSocket"));
         socket.on("connect_error", (err) => console.error("WebSocket connection error:", err));
+
+        socket.on("receiveMessage", (messageData) => {
+            console.log("Real-time message received:", messageData)
+
+            // 1. Add to messages list
+            setMessages(messageData)
+        })
+
+
+
+        if (loggedInUserRole !== "astrologer") {
+            console.log(`astrologer status update for user ${astrologerId}`)
+            socket.on("astrologer-status-update", ({ id, username, status }) => {
+                console.log(`Astrologer ${username} (ID: ${id}) is now ${status}`);
+                // Update astrologer's status in the UI
+                // updateAstrologerStatus(id, status); // Custom function for UI update
+            });
+        }
+
+        if (loggedInUserRole == "astrologer") {
+            socket.emit("toggle-online-visibility", { id: astrologerId, showOnline: true });
+        }
 
         socket.emit("joinAstrologer", { astrologerId, isAstrologer: true });
         socket.emit("getUnreadMessages", { astrologerId });
@@ -42,5 +65,5 @@ export const useSocket = (astrologerId) => {
         };
     }, [astrologerId, loggedInToken]);
 
-    return { unreadMessages, socket: socketRef.current };
+    return { messages, unreadMessages, socket: socketRef.current };
 };
