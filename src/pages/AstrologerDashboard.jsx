@@ -1,40 +1,87 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useClients } from "../hooks/useClients.jsx";
-import { useSocket } from "../hooks/useSocket.jsx";
-import ClientCard from "../components/ClientCard.jsx";
 import { FaUserCircle, FaBell } from "react-icons/fa";
-import { useEffect } from "react";
+import { io } from "socket.io-client";
+import toast from "react-hot-toast";
+
+import { useClients } from "../hooks/useClients.jsx";
+import ClientCard from "../components/ClientCard.jsx";
 import Profile from "./ProfilePage.jsx";
+
 
 const AstrologerDashboard = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [viewProfile, setViewProfile] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [unreadMessages, setUnreadMessages] = useState([]);
+    const socketRef = useRef(null);
 
     const astrologer = useSelector((state) => state.auth);
-    // console.log(`Logged in user is ${JSON.stringify(astrologer.loggedIn.id)}`)
     const { clients, loading, error } = useClients();
-    const { unreadMessages, socket, markAsRead } = useSocket(astrologer.loggedIn.id);
     const navigate = useNavigate();
     const [index, setIndex] = useState(0);
 
-    useEffect(() => {
-        if (socket && astrologer?.loggedIn?.id) {
-            socket.emit("toggle-online-visibility", {
-                id: astrologer.loggedIn.id,
-                showOnline: true,
-            });
-        }
-    }, [socket, astrologer.loggedIn.id]);
+    const loggedInToken = astrologer?.loggedIn?.accessToken;
+    const astrologerId = astrologer?.loggedIn?.id;
 
-    // Navigate to chat on clicking an unread message
+    // WebSocket setup
+    useEffect(() => {
+        if (!astrologerId || !loggedInToken) return;
+
+        socketRef.current = io(import.meta.env.VITE_PUBLIC_API_BASE_URL, {
+            path: "/ws/chat",
+            auth: { loggedInToken },
+            transports: ["websocket"],
+        });
+
+        const socket = socketRef.current;
+
+        socket.on("connect", () => {
+            console.log("✅ Connected to WebSocket");
+            socket.emit("toggle-online-visibility", { id: astrologerId, showOnline: true });
+            socket.emit("joinAstrologer", { astrologerId, isAstrologer: true });
+            socket.emit("joinRoom", { roomId: astrologerId }); // 👈 listen for personal msgs
+            socket.emit("getUnreadMessages", { astrologerId });
+        });
+
+        socket.on("connect_error", (err) => console.error("❌ WebSocket error:", err));
+
+        socket.on("receiveMessage", (message) => {
+            console.log("📩 receiveMessage", message);
+            toast.success("New message received");
+            setUnreadMessages((prev) => [...prev, message]);
+        });
+
+        socket.on("newMessage", (data) => {
+            // console.log("🔔 newMessageNotification", data);
+            toast(`New message from User ${data.senderId}`);
+            setUnreadMessages((prev) => [...prev, data]);
+        });
+
+        socket.on("loadUnreadMessages", (data) => {
+            console.log("📥 loadUnreadMessages", data);
+            setUnreadMessages(data);
+            if (data.length > 0) {
+                toast.custom(
+                    <div className="bg-[#1e0138] text-white px-4 py-3 rounded shadow-md border border-yellow-500">
+                        📩 You have {data.length} unread message{data.length > 1 ? 's' : ''}
+                    </div>,
+                    { duration: 5000 }
+                );
+            }
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [astrologerId, loggedInToken]);
+
+    const socket = socketRef.current;
+
     const handleReply = (message) => {
-        // console.log(`Message is ${JSON.stringify(message)}`)
-        const senderId = message.senderId
-        // console.log(`Sender id from astrologer side is ${senderId}`)
+        const senderId = message.senderId;
         if (socket && message.roomId) {
             socket.emit("joinRoom", { roomId: message.roomId });
             navigate(`/chat/${message.roomId}`, { state: { senderId } });
@@ -42,16 +89,14 @@ const AstrologerDashboard = () => {
         }
     };
 
-    // Mark message as read
     const handleMarkAsRead = (messageId) => {
-        markAsRead(messageId); // Assuming markAsRead updates state
+        setUnreadMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+        // Optional: socket.emit("markAsRead", { messageId });
     };
 
-    // Carousel Controls
     const nextSlide = () => setIndex((prev) => (prev + 1) % clients.length);
     const prevSlide = () => setIndex((prev - 1 + clients.length) % clients.length);
 
-    // Display up to 3 clients in the carousel
     const visibleClients = clients.length >= 3
         ? [clients[index], clients[(index + 1) % clients.length], clients[(index + 2) % clients.length]]
         : clients;
@@ -64,15 +109,12 @@ const AstrologerDashboard = () => {
                     Welcome {astrologer.loggedIn.fullname}
                 </div>
 
-                {/* Icons */}
                 <div className="flex items-center gap-4">
-                    {/* Notifications */}
                     <FaBell
                         className="text-2xl text-yellow-400 cursor-pointer"
                         onClick={() => setIsNotificationOpen(true)}
                     />
 
-                    {/* Profile Dropdown */}
                     <div className="relative">
                         <FaUserCircle
                             className="text-3xl text-yellow-400 cursor-pointer"
@@ -97,10 +139,7 @@ const AstrologerDashboard = () => {
                                 </button>
                                 <button
                                     className="w-full text-left px-4 py-2 hover:bg-gray-200"
-                                    onClick={() => {
-                                        setDropdownOpen(false);
-                                        handleLogout();
-                                    }}
+                                    onClick={() => setDropdownOpen(false)}
                                 >
                                     Logout
                                 </button>
@@ -110,14 +149,13 @@ const AstrologerDashboard = () => {
                 </div>
             </header>
 
-            {/* Profile Page or Dashboard Content */}
+            {/* Profile or Dashboard */}
             <div className="p-6">
                 {viewProfile ? (
                     <Profile setViewProfile={setViewProfile} />
                 ) : (
                     <>
                         <p className="text-center text-gray-600 mb-4">Your latest clients and bookings</p>
-
                         {loading ? (
                             <p className="text-center text-gray-500">Loading...</p>
                         ) : error ? (
@@ -132,7 +170,8 @@ const AstrologerDashboard = () => {
 
                                 <div className="flex gap-6 overflow-hidden w-full justify-center">
                                     {visibleClients.map((client, idx) => (
-                                        <ClientCard key={`${client?.id}-${idx}`} client={client} />
+                                        <ClientCard key={client?.id || `client-${idx}`} client={client} />
+
                                     ))}
                                 </div>
 
@@ -149,26 +188,21 @@ const AstrologerDashboard = () => {
                 )}
             </div>
 
-            {/* Notification Sidebar */}
+            {/* Notifications */}
             {isNotificationOpen && (
                 <div
                     className="fixed inset-0 bg-opacity-50 backdrop-blur-[1px] flex justify-center md:justify-end"
                     onClick={() => setIsNotificationOpen(false)}
                 >
                     <div
-                        className="h-screenw-[90%] md:w-80 max-w-lg bg-[#1e0138] shadow-lg p-4 rounded-lg text-white md:mr-4"
+                        className="h-screen w-[90%] md:w-80 max-w-lg bg-[#1e0138] shadow-lg p-4 rounded-lg text-white md:mr-4"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Close Button */}
                         <div className="flex justify-between items-center border-b border-gray-500 pb-2">
                             <h3 className="text-lg font-semibold text-yellow-400">Notifications</h3>
-                            <X
-                                className="cursor-pointer text-gray-300 hover:text-white"
-                                onClick={() => setIsNotificationOpen(false)}
-                            />
+                            <X className="cursor-pointer text-gray-300 hover:text-white" onClick={() => setIsNotificationOpen(false)} />
                         </div>
 
-                        {/* Unread Messages Inside Sidebar */}
                         <div className="mt-3 pb-10 space-y-3 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
                             {unreadMessages.length > 0 ? (
                                 unreadMessages.map((msg) => (
@@ -180,7 +214,6 @@ const AstrologerDashboard = () => {
                                             </div>
                                             <span className="text-xs text-gray-400">{msg.timestamp}</span>
                                         </div>
-                                        {/* Buttons: Reply & Mark as Read */}
                                         <div className="flex gap-2">
                                             <button
                                                 className="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-white text-sm"
