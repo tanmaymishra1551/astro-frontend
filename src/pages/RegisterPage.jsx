@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
@@ -9,7 +10,7 @@ function RegisterPage() {
     const [formData, setFormData] = useState({
         fullname: "",
         email: "",
-        phone: "",  // Added phone field
+        phone: "",
         username: "",
         password: "",
         role: "user",
@@ -28,22 +29,23 @@ function RegisterPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
             });
+
             const data = await response.json();
             if (response.ok) {
+                toast.success("Registered successfully!");
                 navigate("/login");
             } else {
-                console.error("Registration failed:", data.message);
+                toast.error(data.message || "Registration failed");
             }
         } catch (error) {
-            console.error("An error occurred:", error);
+            toast.error(error.message || "Something went wrong");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a0132] to-[#090114] text-white px-4 sm:px-6 md:px-8">
-            {/* Floating Astrology Icons */}
+        <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a0132] to-[#090114] text-white px-4">
             <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
                 <span className="absolute top-10 left-8 md:left-16 animate-bounce text-purple-400 text-3xl sm:text-4xl">🪐</span>
                 <span className="absolute bottom-10 right-8 md:right-16 animate-pulse text-yellow-400 text-2xl sm:text-3xl">♈</span>
@@ -54,11 +56,10 @@ function RegisterPage() {
                 <h2 className="text-2xl sm:text-3xl font-bold text-center text-yellow-400 mb-4 sm:mb-6">Register</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Input Fields with Icons */}
                     {[
                         { name: "fullname", placeholder: "Full Name", icon: "👤", type: "text" },
                         { name: "email", placeholder: "Email", icon: "📧", type: "email" },
-                        { name: "phone", placeholder: "Phone Number", icon: "📞", type: "tel" }, // Added phone field
+                        { name: "phone", placeholder: "Phone Number", icon: "📞", type: "tel" },
                         { name: "username", placeholder: "Username", icon: "🔹", type: "text" },
                         { name: "password", placeholder: "Password", icon: "🔑", type: "password" },
                     ].map(({ name, placeholder, icon, type }) => (
@@ -78,7 +79,6 @@ function RegisterPage() {
                         </div>
                     ))}
 
-                    {/* Role Selection */}
                     <div className="flex flex-col sm:flex-row justify-between gap-2">
                         {["user", "admin", "astrologer"].map((role) => (
                             <button
@@ -96,7 +96,6 @@ function RegisterPage() {
                         ))}
                     </div>
 
-                    {/* Register Button */}
                     <button
                         type="submit"
                         className="w-full p-3 bg-gradient-to-r from-purple-500 to-yellow-400 text-black font-bold rounded-lg hover:shadow-lg hover:from-yellow-400 hover:to-purple-500 transition relative disabled:opacity-50 disabled:cursor-not-allowed"
@@ -108,10 +107,7 @@ function RegisterPage() {
 
                 <p className="text-center mt-4">
                     Already have an account?{" "}
-                    <span
-                        onClick={() => navigate("/login")}
-                        className="text-blue-400 cursor-pointer hover:underline"
-                    >
+                    <span onClick={() => navigate("/login")} className="text-blue-400 cursor-pointer hover:underline">
                         Login
                     </span>
                 </p>
