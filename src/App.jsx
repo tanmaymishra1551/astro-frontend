@@ -2,6 +2,8 @@ import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Toaster } from "react-hot-toast";
+import VoicePage from "./pages/VoicePage.jsx";
+import VideoPage from "./pages/VideoPage.jsx";
 
 // Lazy imports
 const HomePage = lazy(() => import("./pages/HomePage.jsx"));
@@ -29,6 +31,8 @@ const publicRoutes = [
   { path: "/", element: <HomePage /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
+  { path: "/voice", element: <VoicePage /> },
+  { path: "/video", element: <VideoPage /> },
 ];
 
 const protectedRoutes = [
