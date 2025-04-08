@@ -76,7 +76,7 @@ function HomePage() {
                 </div>
 
                 {/* Service 4 */}
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center" onClick={() => navigate("/voice")} style={{ cursor: "pointer" }}>
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                         <img
                             src="/public/chat-2389223_640.png"
@@ -88,7 +88,7 @@ function HomePage() {
                 </div>
 
                 {/* Service 5 */}
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center" onClick={() => navigate("/video")} style={{ cursor: "pointer" }}>
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                         <img
                             src="/public/call.png"
