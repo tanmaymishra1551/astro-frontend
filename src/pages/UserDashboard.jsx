@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-// import { useSocket } from "../hooks/useSocket.jsx";
+import { useSocket } from "../hooks/useSocket.jsx";
 
 const API_BASE_URL = import.meta.env.VITE_PUBLIC_API_BASE_URL;
 
@@ -14,7 +14,7 @@ const UserDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentSlide, setCurrentSlide] = useState(0);
-    // const { socket } = useSocket(userID);
+    const { socket } = useSocket(userID);
 
     useEffect(() => {
 
