@@ -131,16 +131,24 @@ const VideoPage = () => {
             const remoteStream = event.streams[0];
             if (remoteVideoRef.current && remoteStream) {
                 console.log("✅ Setting remote video stream", remoteStream);
-                console.log("🎯 remoteVideoRef.current:", remoteVideoRef.current);
-
-                setTimeout(() => {
+        
+                if (remoteVideoRef.current.srcObject !== remoteStream) {
                     remoteVideoRef.current.srcObject = remoteStream;
-                    remoteVideoRef.current.play().catch((err) => {
-                        console.error("⚠️ Error playing remote video", err);
-                    });
-                }, 300);
+        
+                    remoteVideoRef.current
+                        .play()
+                        .then(() => {
+                            console.log("▶️ Remote video playing");
+                        })
+                        .catch((err) => {
+                            console.error("⚠️ Error playing remote video", err);
+                        });
+                } else {
+                    console.log("🚫 Duplicate stream ignored");
+                }
             }
         };
+        
 
         if (localStream.current) {
             localStream.current.getTracks().forEach((track) =>
