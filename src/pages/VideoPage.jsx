@@ -15,7 +15,6 @@ const VideoPage = () => {
     useEffect(() => {
         const init = async () => {
             try {
-                // Get camera & mic
                 localStream.current = await navigator.mediaDevices.getUserMedia({
                     video: true,
                     audio: true,
@@ -29,7 +28,6 @@ const VideoPage = () => {
                 return;
             }
 
-            // Connect to socket
             socketRef.current = io(`${import.meta.env.VITE_PUBLIC_API_BASE_URL}/call`, {
                 transports: ["websocket"],
             });
@@ -130,11 +128,17 @@ const VideoPage = () => {
 
         peerConnection.current.ontrack = (event) => {
             console.log("📽️ Remote track received");
-            if (remoteVideoRef.current && event.streams[0]) {
-                console.log("✅ Setting remote video stream", event.streams[0]);
+            const remoteStream = event.streams[0];
+            if (remoteVideoRef.current && remoteStream) {
+                console.log("✅ Setting remote video stream", remoteStream);
                 console.log("🎯 remoteVideoRef.current:", remoteVideoRef.current);
 
-                remoteVideoRef.current.srcObject = event.streams[0];
+                setTimeout(() => {
+                    remoteVideoRef.current.srcObject = remoteStream;
+                    remoteVideoRef.current.play().catch((err) => {
+                        console.error("⚠️ Error playing remote video", err);
+                    });
+                }, 300);
             }
         };
 
@@ -149,10 +153,12 @@ const VideoPage = () => {
         <div className="relative h-screen bg-black text-white">
             {/* Remote Video */}
             <video
+                key={"remote-video"}
                 ref={remoteVideoRef}
                 autoPlay
                 playsInline
-                className="absolute w-full h-full object-cover"
+                muted={false}
+                className="absolute w-full h-full object-cover border-4 border-green-400 z-20"
             ></video>
 
             {/* Local Video (small preview) */}
@@ -164,7 +170,7 @@ const VideoPage = () => {
                 className="absolute bottom-20 right-4 w-28 h-36 rounded-md border border-white object-cover z-10"
             ></video>
 
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-8 z-20">
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-8 z-30">
                 <ControlButton icon="🎤" label="Mute" />
                 <ControlButton icon="💬" label="Message" />
                 <ControlButton icon="🔊" label="Speaker" />
