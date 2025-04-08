@@ -31,7 +31,6 @@ const VideoPage = () => {
 
             // Connect to socket
             socketRef.current = io(`${import.meta.env.VITE_PUBLIC_API_BASE_URL}/call`, {
-                path: "/ws/call",
                 transports: ["websocket"],
             });
 
