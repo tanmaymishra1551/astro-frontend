@@ -11,7 +11,7 @@ const VideoPage = () => {
 
     useEffect(() => {
         const init = async () => {
-            // Step 1: Get local video/audio
+            // Step 1: Access camera/mic
             try {
                 localStream.current = await navigator.mediaDevices.getUserMedia({
                     video: true,
@@ -41,23 +41,28 @@ const VideoPage = () => {
 
             socket.on("user-joined", async (userId) => {
                 console.log("🔔 User joined:", userId);
-                await startCall(userId);
+                setTimeout(() => startCall(userId), 500); // slight delay to ensure peer is ready
             });
 
             socket.on("offer", async ({ offer, from }) => {
+                console.log("📨 Received offer from:", from);
                 await createPeer(false, from);
                 await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
                 const answer = await peerConnection.current.createAnswer();
-                await peerConnection.current.setLocalDescription(answer);
+                if (!peerConnection.current.localDescription) {
+                    await peerConnection.current.setLocalDescription(answer);
+                }
                 socket.emit("answer", { answer, to: from });
             });
 
-            socket.on("answer", async ({ answer }) => {
+            socket.on("answer", async ({ answer, from }) => {
+                console.log("📨 Received answer from:", from);
                 await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
             });
 
-            socket.on("ice-candidate", async ({ candidate }) => {
+            socket.on("ice-candidate", async ({ candidate, from }) => {
                 try {
+                    console.log("❄️ Received ICE candidate from:", from);
                     await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
                 } catch (err) {
                     console.error("❌ Failed to add ICE candidate", err);
@@ -76,11 +81,18 @@ const VideoPage = () => {
     const startCall = async (remoteSocketId) => {
         await createPeer(true, remoteSocketId);
         const offer = await peerConnection.current.createOffer();
-        await peerConnection.current.setLocalDescription(offer);
+        if (!peerConnection.current.localDescription) {
+            await peerConnection.current.setLocalDescription(offer);
+        }
         socketRef.current.emit("offer", { offer, to: remoteSocketId });
     };
 
     const createPeer = async (isInitiator, remoteSocketId) => {
+        if (peerConnection.current) {
+            console.warn("⚠️ PeerConnection already exists. Skipping recreation.");
+            return;
+        }
+
         peerConnection.current = new RTCPeerConnection();
 
         peerConnection.current.onicecandidate = (event) => {
@@ -93,6 +105,7 @@ const VideoPage = () => {
         };
 
         peerConnection.current.ontrack = (event) => {
+            console.log("📥 Got remote track:", event.streams);
             if (remoteVideoRef.current && event.streams[0]) {
                 remoteVideoRef.current.srcObject = event.streams[0];
             }
