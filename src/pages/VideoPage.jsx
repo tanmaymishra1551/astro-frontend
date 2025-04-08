@@ -131,6 +131,9 @@ const VideoPage = () => {
         peerConnection.current.ontrack = (event) => {
             console.log("📽️ Remote track received");
             if (remoteVideoRef.current && event.streams[0]) {
+                console.log("✅ Setting remote video stream", event.streams[0]);
+                console.log("🎯 remoteVideoRef.current:", remoteVideoRef.current);
+
                 remoteVideoRef.current.srcObject = event.streams[0];
             }
         };
