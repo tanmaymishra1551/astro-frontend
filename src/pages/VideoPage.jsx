@@ -3,19 +3,19 @@ import { io } from "socket.io-client";
 
 const VideoPage = () => {
     const roomId = "video-room";
+
     const socketRef = useRef(null);
     const peerConnection = useRef(null);
     const localStream = useRef(null);
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
-    const pendingCandidates = useRef([]);
     const remoteDescSet = useRef(false);
-
+    const pendingCandidates = useRef([]);
 
     useEffect(() => {
         const init = async () => {
-            // Step 1: Get local video/audio
             try {
+                // Get camera & mic
                 localStream.current = await navigator.mediaDevices.getUserMedia({
                     video: true,
                     audio: true,
@@ -24,13 +24,14 @@ const VideoPage = () => {
                     localVideoRef.current.srcObject = localStream.current;
                 }
             } catch (err) {
-                console.error("🚫 Camera/Microphone access denied", err);
-                alert("Camera and mic access are required for video call.");
+                console.error("🚫 Camera/Mic access denied", err);
+                alert("Camera and mic are required");
                 return;
             }
 
-            // Step 2: Connect to socket
+            // Connect to socket
             socketRef.current = io(`${import.meta.env.VITE_PUBLIC_API_BASE_URL}/call`, {
+                path: "/ws/call",
                 transports: ["websocket"],
             });
 
@@ -48,57 +49,50 @@ const VideoPage = () => {
 
             socket.on("offer", async ({ offer, from }) => {
                 await createPeer(false, from);
-            
                 await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
                 remoteDescSet.current = true;
-            
-                // ✅ Process any queued ICE candidates
+
                 for (const candidate of pendingCandidates.current) {
                     try {
                         await peerConnection.current.addIceCandidate(candidate);
                     } catch (err) {
-                        console.error("❌ Failed to add buffered ICE", err);
+                        console.error("❌ Failed to add ICE (buffered)", err);
                     }
                 }
                 pendingCandidates.current = [];
-            
+
                 const answer = await peerConnection.current.createAnswer();
                 await peerConnection.current.setLocalDescription(answer);
-                socketRef.current.emit("answer", { answer, to: from });
+                socket.emit("answer", { answer, to: from });
             });
-            
 
             socket.on("answer", async ({ answer }) => {
                 await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
                 remoteDescSet.current = true;
-            
-                // ✅ Process any queued ICE candidates
+
                 for (const candidate of pendingCandidates.current) {
                     try {
                         await peerConnection.current.addIceCandidate(candidate);
                     } catch (err) {
-                        console.error("❌ Failed to add buffered ICE", err);
+                        console.error("❌ Failed to add ICE (buffered)", err);
                     }
                 }
                 pendingCandidates.current = [];
             });
-            
 
             socket.on("ice-candidate", async ({ candidate }) => {
                 const iceCandidate = new RTCIceCandidate(candidate);
-                if (remoteDescSet.current && peerConnection.current) {
+                if (remoteDescSet.current) {
                     try {
                         await peerConnection.current.addIceCandidate(iceCandidate);
-                        console.log("📡 ICE Candidate added");
                     } catch (err) {
-                        console.error("❌ Failed to add ICE candidate", err);
+                        console.error("❌ Failed to add ICE", err);
                     }
                 } else {
                     console.log("🕓 Queued ICE Candidate");
                     pendingCandidates.current.push(iceCandidate);
                 }
             });
-
         };
 
         init();
@@ -119,16 +113,24 @@ const VideoPage = () => {
     const createPeer = async (isInitiator, remoteSocketId) => {
         peerConnection.current = new RTCPeerConnection();
 
+        remoteDescSet.current = false;
+        pendingCandidates.current = [];
+
         peerConnection.current.onicecandidate = (event) => {
             if (event.candidate) {
-                socketRef.current.emit("ice-candidate", {
-                    candidate: event.candidate,
-                    to: remoteSocketId,
-                });
+                if (remoteDescSet.current) {
+                    socketRef.current.emit("ice-candidate", {
+                        candidate: event.candidate,
+                        to: remoteSocketId,
+                    });
+                } else {
+                    pendingCandidates.current.push(event.candidate);
+                }
             }
         };
 
         peerConnection.current.ontrack = (event) => {
+            console.log("📽️ Remote track received");
             if (remoteVideoRef.current && event.streams[0]) {
                 remoteVideoRef.current.srcObject = event.streams[0];
             }
