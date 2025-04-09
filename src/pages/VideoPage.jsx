@@ -134,18 +134,18 @@ const VideoPage = () => {
 
             const remoteStream = event.streams[0];
             console.log("📦 remote tracks:", remoteStream?.getTracks());
-            if (remoteVideoRef.current && remoteStream) {
-                console.log("✅ Setting remote video stream", remoteStream);
-                    remoteVideoRef.current.srcObject = remoteStream;
-                    console.log(`Remote video stream is ${remoteVideoRef.current}`)
-                    remoteVideoRef.current
-                        .play()``
-                        .then(() => {
-                            console.log("▶️ Remote video playing");
-                        })
-                        .catch((err) => {
-                            console.error("⚠️ Error playing remote video", err);
-                        });
+            const videoEl = remoteVideoRef.current;
+
+            if (videoEl && remoteStream) {
+                videoEl.srcObject = remoteStream;
+                // Wait until video metadata (like resolution) is ready
+                videoEl.onloadedmetadata = () => {
+                    console.log("📐 Resolution:", videoEl.videoWidth, "x", videoEl.videoHeight);
+                    videoEl
+                        .play()
+                        .then(() => console.log("▶️ Remote video playing"))
+                        .catch((err) => console.error("⚠️ Play error", err));
+                };
             }
         };
 
