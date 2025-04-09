@@ -102,6 +102,7 @@ const VideoPage = () => {
 
     const startCall = async (remoteSocketId) => {
         await createPeer(true, remoteSocketId);
+        console.log("📞 Starting call with", remoteSocketId);
         const offer = await peerConnection.current.createOffer();
         await peerConnection.current.setLocalDescription(offer);
         socketRef.current.emit("offer", { offer, to: remoteSocketId });
@@ -128,15 +129,19 @@ const VideoPage = () => {
 
         peerConnection.current.ontrack = (event) => {
             console.log("📽️ Remote track received");
+            console.log("👀 track:", event.track);
+            console.log("🎞️ streams:", event.streams);
+
             const remoteStream = event.streams[0];
+            console.log("📦 remote tracks:", remoteStream?.getTracks());
             if (remoteVideoRef.current && remoteStream) {
                 console.log("✅ Setting remote video stream", remoteStream);
-        
+
                 if (remoteVideoRef.current.srcObject !== remoteStream) {
                     remoteVideoRef.current.srcObject = remoteStream;
-        
+                    console.log(`Remote video stream is ${remoteVideoRef.current}`)
                     remoteVideoRef.current
-                        .play()
+                        .play()``
                         .then(() => {
                             console.log("▶️ Remote video playing");
                         })
@@ -148,7 +153,7 @@ const VideoPage = () => {
                 }
             }
         };
-        
+
 
         if (localStream.current) {
             localStream.current.getTracks().forEach((track) =>
