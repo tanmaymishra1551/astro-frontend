@@ -142,7 +142,6 @@ const VideoPage = () => {
                 videoEl.onloadedmetadata = () => {
                     console.log("📐 Resolution:", videoEl.videoWidth, "x", videoEl.videoHeight);
                     videoEl
-                        .play()
                         .then(() => console.log("▶️ Remote video playing"))
                         .catch((err) => console.error("⚠️ Play error", err));
                 };
