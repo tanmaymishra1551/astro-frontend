@@ -136,8 +136,6 @@ const VideoPage = () => {
             console.log("📦 remote tracks:", remoteStream?.getTracks());
             if (remoteVideoRef.current && remoteStream) {
                 console.log("✅ Setting remote video stream", remoteStream);
-
-                if (remoteVideoRef.current.srcObject !== remoteStream) {
                     remoteVideoRef.current.srcObject = remoteStream;
                     console.log(`Remote video stream is ${remoteVideoRef.current}`)
                     remoteVideoRef.current
@@ -148,9 +146,6 @@ const VideoPage = () => {
                         .catch((err) => {
                             console.error("⚠️ Error playing remote video", err);
                         });
-                } else {
-                    console.log("🚫 Duplicate stream ignored");
-                }
             }
         };
 
