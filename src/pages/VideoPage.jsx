@@ -1,8 +1,18 @@
 import React, { useEffect, useRef } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import { useSelector } from "react-redux";
 
 const VideoPage = () => {
-    const roomId = "video-room";
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const loggedIn = useSelector((state) => state.auth);
+    const loggedInToken = loggedIn.loggedIn.accessToken;
+    const loggedInUser = loggedIn.loggedIn.id;
+    // Expect query parameters such as roomId, recipientId, and role
+    const roomId = searchParams.get("roomId") || "video-room";
+    const recipientId = searchParams.get("recipientId") || "astrologer";
+    const role = searchParams.get("role") || "callee"; // "caller" or "callee"
 
     const socketRef = useRef(null);
     const peerConnection = useRef(null);
@@ -28,57 +38,81 @@ const VideoPage = () => {
                 return;
             }
 
-            socketRef.current = io(`${import.meta.env.VITE_PUBLIC_API_BASE_URL}/call`, {
+            socketRef.current = io(import.meta.env.VITE_PUBLIC_API_BASE_URL, {
+                path: "/ws/chat",
+                auth: { loggedInToken },
                 transports: ["websocket"],
             });
-
             const socket = socketRef.current;
 
             socket.on("connect", () => {
-                console.log("✅ Connected to Call Socket:", socket.id);
-                socket.emit("join-room", roomId);
+                console.log(`✅ Connected to Call Socket ${socket.id} with loggInUser:${loggedInUser} and role:${role}`);
+                // All peers join the same room
+                socket.emit("join-room", { roomId, recipientId, loggedInUser });
+                // Send video call request if you are the caller
+                if (role === "caller") {
+                    console.log("📞 Sending video call request to", recipientId);
+                    socket.emit("video-call-request", {
+                        roomId,
+                        from: socket.id,
+                        to: recipientId,
+                    });
+                }
             });
 
+            // When the other party (caller/callee) joins, if you are the caller, start the call.
             socket.on("user-joined", async (userId) => {
                 console.log("🔔 User joined:", userId);
-                await startCall(userId);
+                if (role === "caller") {
+                    await startCall(userId);
+                }
+                else {
+                    console.log(`Role is calleee`)
+                }
             });
 
             socket.on("offer", async ({ offer, from }) => {
-                await createPeer(false, from);
-                await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
-                remoteDescSet.current = true;
+                // console.log(`Offer received from ${from}`);
+                // If you are callee, then create the peer and answer the offer
+                if (role === "callee") {
+                    await createPeer(false, from);
+                    await peerConnection.current.setRemoteDescription(offer);
+                    remoteDescSet.current = true;
 
-                for (const candidate of pendingCandidates.current) {
-                    try {
-                        await peerConnection.current.addIceCandidate(candidate);
-                    } catch (err) {
-                        console.error("❌ Failed to add ICE (buffered)", err);
+                    // Add any buffered ICE candidates
+                    for (const candidate of pendingCandidates.current) {
+                        try {
+                            await peerConnection.current.addIceCandidate(candidate);
+                        } catch (err) {
+                            console.error("❌ Failed to add ICE (buffered)", err);
+                        }
                     }
-                }
-                pendingCandidates.current = [];
+                    pendingCandidates.current = [];
 
-                const answer = await peerConnection.current.createAnswer();
-                await peerConnection.current.setLocalDescription(answer);
-                socket.emit("answer", { answer, to: from });
+                    const answer = await peerConnection.current.createAnswer();
+                    await peerConnection.current.setLocalDescription(answer);
+                    socket.emit("answer", { answer, to: from });
+                }
             });
 
             socket.on("answer", async ({ answer }) => {
-                await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
-                remoteDescSet.current = true;
-
-                for (const candidate of pendingCandidates.current) {
-                    try {
-                        await peerConnection.current.addIceCandidate(candidate);
-                    } catch (err) {
-                        console.error("❌ Failed to add ICE (buffered)", err);
+                // Only the caller will get an answer
+                if (role === "caller") {
+                    await peerConnection.current.setRemoteDescription(answer);
+                    remoteDescSet.current = true;
+                    for (const candidate of pendingCandidates.current) {
+                        try {
+                            await peerConnection.current.addIceCandidate(candidate);
+                        } catch (err) {
+                            console.error("❌ Failed to add ICE (buffered)", err);
+                        }
                     }
+                    pendingCandidates.current = [];
                 }
-                pendingCandidates.current = [];
             });
 
             socket.on("ice-candidate", async ({ candidate }) => {
-                const iceCandidate = new RTCIceCandidate(candidate);
+                const iceCandidate = candidate;
                 if (remoteDescSet.current) {
                     try {
                         await peerConnection.current.addIceCandidate(iceCandidate);
@@ -98,13 +132,15 @@ const VideoPage = () => {
             if (socketRef.current) socketRef.current.disconnect();
             if (peerConnection.current) peerConnection.current.close();
         };
-    }, []);
+    }, [roomId, recipientId, role]);
 
     const startCall = async (remoteSocketId) => {
         await createPeer(true, remoteSocketId);
-        console.log("📞 Starting call with", remoteSocketId);
+        // console.log("📞 Calling ", remoteSocketId);
         const offer = await peerConnection.current.createOffer();
+        // console.log(`📜offer at caller end :`, offer.sdp);
         await peerConnection.current.setLocalDescription(offer);
+        // console.log(`Socket ID: ${socketRef.current.id}`);
         socketRef.current.emit("offer", { offer, to: remoteSocketId });
     };
 
@@ -115,7 +151,10 @@ const VideoPage = () => {
         pendingCandidates.current = [];
 
         peerConnection.current.onicecandidate = (event) => {
+            console.log(`event is :`, event);
             if (event.candidate) {
+                // Send ICE candidates as soon as remote desc is set,
+                // or buffer candidates until it is available
                 if (remoteDescSet.current) {
                     socketRef.current.emit("ice-candidate", {
                         candidate: event.candidate,
@@ -128,27 +167,14 @@ const VideoPage = () => {
         };
 
         peerConnection.current.ontrack = (event) => {
-            console.log("📽️ Remote track received");
-            console.log("👀 track:", event.track);
-            console.log("🎞️ streams:", event.streams);
-
+            // console.log("📽️ Remote track received");
             const remoteStream = event.streams[0];
-            console.log("📦 remote tracks:", remoteStream?.getTracks());
-            const videoEl = remoteVideoRef.current;
-
-            if (videoEl && remoteStream) {
-                videoEl.srcObject = remoteStream;
-                // Wait until video metadata (like resolution) is ready
-                videoEl.onloadedmetadata = () => {
-                    console.log("📐 Resolution:", videoEl.videoWidth, "x", videoEl.videoHeight);
-                    videoEl
-                        .then(() => console.log("▶️ Remote video playing"))
-                        .catch((err) => console.error("⚠️ Play error", err));
-                };
+            if (remoteVideoRef.current && remoteStream) {
+                remoteVideoRef.current.srcObject = remoteStream;
             }
         };
 
-
+        // Add local tracks to the connection
         if (localStream.current) {
             localStream.current.getTracks().forEach((track) =>
                 peerConnection.current.addTrack(track, localStream.current)
@@ -160,11 +186,9 @@ const VideoPage = () => {
         <div className="relative h-screen bg-black text-white">
             {/* Remote Video */}
             <video
-                key={"remote-video"}
                 ref={remoteVideoRef}
                 autoPlay
                 playsInline
-                muted={false}
                 className="absolute w-full h-full object-cover border-4 border-green-400 z-20"
             ></video>
 
@@ -177,11 +201,14 @@ const VideoPage = () => {
                 className="absolute bottom-20 right-4 w-28 h-36 rounded-md border border-white object-cover z-10"
             ></video>
 
+            {/* Call Controls */}
             <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-8 z-30">
                 <ControlButton icon="🎤" label="Mute" />
                 <ControlButton icon="💬" label="Message" />
                 <ControlButton icon="🔊" label="Speaker" />
-                <button className="bg-red-600 w-16 h-16 rounded-full text-2xl">📞</button>
+                <button className="bg-red-600 w-16 h-16 rounded-full text-2xl">
+                    📞
+                </button>
             </div>
         </div>
     );

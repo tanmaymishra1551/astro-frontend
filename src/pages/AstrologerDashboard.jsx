@@ -101,6 +101,33 @@ const AstrologerDashboard = () => {
         ? [clients[index], clients[(index + 1) % clients.length], clients[(index + 2) % clients.length]]
         : clients;
 
+    useEffect(() => {
+        if (!socketRef.current) return;
+
+        // Listen for incoming video call requests
+        socketRef.current.on("video-call-request", (data) => {
+            console.log("Incoming video call:", data);
+            // Show a toast/notification with a button for the astrologer to join
+            toast.custom(
+                <div className="bg-[#1e0138] text-white px-4 py-3 rounded shadow-md border border-yellow-500">
+                    <div>Incoming video call from User {data.from}</div>
+                    <button
+                        className="mt-2 bg-yellow-500 text-black px-3 py-1 rounded"
+                        onClick={() => {
+                            // Navigate to VideoPage as callee with room id and recipient id (which will be user id)
+                            navigate(`/video?roomId=${data.roomId}&recipientId=${data.from}&role=callee`);
+                        }}
+                    >
+                        Join Call
+                    </button>
+                </div>,
+                { duration: 10000 }
+            );
+        });
+    }, [socketRef.current, navigate]);
+
+
+
     return (
         <div className="astro-bg min-h-screen">
             {/* Header */}

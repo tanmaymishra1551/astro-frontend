@@ -37,7 +37,7 @@ export const useSocket = (astrologerId) => {
         if (loggedInUserRole !== "astrologer") {
             console.log(`astrologer status update for user ${astrologerId}`)
             socket.on("astrologer-status-update", ({ id, username, status }) => {
-                console.log(`Astrologer ${username} (ID: ${id}) is now ${status}`);
+                // console.log(`Astrologer ${username} (ID: ${id}) is now ${status}`);
                 // Update astrologer's status in the UI
                 // updateAstrologerStatus(id, status); // Custom function for UI update
             });

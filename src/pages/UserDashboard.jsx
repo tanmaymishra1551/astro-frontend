@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +17,7 @@ const UserDashboard = () => {
     const [error, setError] = useState(null);
     const [currentSlide, setCurrentSlide] = useState(0);
     const { socket } = useSocket(userID);
+    const navigate = useNavigate();
 
     useEffect(() => {
 
@@ -81,6 +84,13 @@ const UserDashboard = () => {
     const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % totalSlides);
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
 
+    const handleVideoCall = (astrologerId) => {
+        // Generate a room id – you may use a UUID or a simple string
+        const roomId = "video-room-" + new Date().getTime();
+        // Navigate to VideoPage as caller with roomId and recipientId
+        navigate(`/video?roomId=${roomId}&recipientId=${astrologerId}&role=caller`);
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#1a0132] to-[#090114] text-white p-6">
             {/* Dashboard Header */}
@@ -143,6 +153,12 @@ const UserDashboard = () => {
                                                 >
                                                     Book a session
                                                 </Link>
+                                                <button
+                                                    onClick={() => handleVideoCall(ast.id)}
+                                                    className="inline-block bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
+                                                >
+                                                    Video Call
+                                                </button>
                                             </div>
                                         </motion.div>
                                     ))}
