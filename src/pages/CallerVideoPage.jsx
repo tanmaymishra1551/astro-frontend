@@ -61,16 +61,6 @@ const VideoPage = () => {
                     });
             });
 
-            // When the other party (caller/callee) joins, if you are the caller, start the call.
-            socket.on("user-joined", async (userId) => {
-                console.log("🔔 User joined:", userId);
-                if (role === "caller") {
-                    await startCall(userId);
-                }
-                else {
-                    console.log(`Role is calleee`)
-                }
-            });
 
             socket.on("offer", async ({ offer,iceCandidates, roomId, calleeId }) => {
                 console.log(`Received offer from ${calleeId} in room ${roomId}`);
@@ -88,9 +78,29 @@ const VideoPage = () => {
                     }
                 }
 
+                // Create answer and gather ICE candidates
                 const answer = await peerConnection.current.createAnswer();
                 await peerConnection.current.setLocalDescription(answer);
-                socket.emit("answer", { answer, to: calleeId });
+
+                // Wait for ICE gathering to complete
+                const answerIceCandidates = [];
+                await new Promise(resolve => {
+                    peerConnection.current.onicecandidate = (event) => {
+                        if (event.candidate) {
+                            answerIceCandidates.push(event.candidate);
+                        } else {
+                            // Null candidate means ICE gathering is complete
+                            resolve();
+                        }
+                    };
+                });
+
+                // Send answer with all gathered ICE candidates
+                socket.emit("answer", { 
+                    answer, 
+                    iceCandidates: answerIceCandidates,
+                    to: calleeId 
+                });
             });
 
             socket.on("answer", async ({ answer, from }) => {

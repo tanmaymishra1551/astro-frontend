@@ -125,16 +125,22 @@ const CalleeVideoPage = () => {
         });
 
         // Listen for answer
-        socketRef.current.on('answer', async ({ answer }) => {
+        socketRef.current.on('answer', async ({ answer, iceCandidates }) => {
+            console.log('Received answer ${answer} with ICE candidates ${iceCandidates');
             await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
-        });
-
-        // Listen for ICE candidates
-        socketRef.current.on('ice-candidate', async ({ candidate }) => {
-            if (candidate) {
-                await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+            
+            // Process ICE candidates sent with the answer
+            if (iceCandidates && iceCandidates.length > 0) {
+                console.log(`Processing ${iceCandidates.length} ICE candidates from answer`);
+                for (const candidate of iceCandidates) {
+                    try {
+                        await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+                    } catch (err) {
+                        console.error("❌ Failed to add ICE (from answer)", err);
+                    }
+                }
             }
-        });
+        }); 
 
         // Listen for chat messages
         socketRef.current.on('chat-message', ({ message }) => {

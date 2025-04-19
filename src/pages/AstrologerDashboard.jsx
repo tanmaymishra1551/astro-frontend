@@ -65,7 +65,7 @@ const AstrologerDashboard = () => {
 
                 // Listen for incoming video call requests
                 socket.on("video-call-request", ({ roomId, from, username }) => {
-                    console.log(`Astorloger got video call requst form ${from} and ask to join room ${roomId}`)
+                    console.log(`Astorloger got video call request from${username} with socket id ${from} and ask to join room ${roomId}`)
                     toast.custom(
                         <div className="bg-[#1e0138] text-white px-4 py-3 rounded shadow-md border border-yellow-500">
                             <div>Incoming video call from User {username}</div>
