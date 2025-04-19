@@ -4,6 +4,8 @@ import { useSelector } from "react-redux";
 import { Toaster } from "react-hot-toast";
 import VoicePage from "./pages/VoicePage.jsx";
 import VideoPage from "./pages/VideoPage.jsx";
+import CallerVideoPage from "./pages/CallerVideoPage.jsx";
+import CalleeVideoPage from "./pages/CalleeVideoPage.jsx";
 
 // Lazy imports
 const HomePage = lazy(() => import("./pages/HomePage.jsx"));
@@ -33,6 +35,8 @@ const publicRoutes = [
   { path: "/register", element: <RegisterPage /> },
   { path: "/voice", element: <VoicePage /> },
   { path: "/video", element: <VideoPage /> },
+  { path: "/caller-video", element: <CallerVideoPage /> },
+  { path: "/callee-video", element: <CalleeVideoPage /> },
 ];
 
 const protectedRoutes = [

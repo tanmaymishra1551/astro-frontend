@@ -87,8 +87,8 @@ const UserDashboard = () => {
     const handleVideoCall = (astrologerId) => {
         // Generate a room id – you may use a UUID or a simple string
         const roomId = "video-room-" + new Date().getTime();
-        // Navigate to VideoPage as caller with roomId and recipientId
-        navigate(`/video?roomId=${roomId}&recipientId=${astrologerId}&role=caller`);
+        // Navigate to CallerVideoPage with roomId
+        navigate(`/caller-video?roomId=${roomId}&callee=${astrologerId}`);
     };
 
     return (

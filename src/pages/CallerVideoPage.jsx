@@ -3,15 +3,17 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useSelector } from "react-redux";
 
+
 const VideoPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const loggedIn = useSelector((state) => state.auth);
     const loggedInToken = loggedIn.loggedIn.accessToken;
     const loggedInUser = loggedIn.loggedIn.id;
+    const loggedInUserName = loggedIn.loggedIn.username;
     // Expect query parameters such as roomId, recipientId, and role
     const roomId = searchParams.get("roomId") || "video-room";
-    const recipientId = searchParams.get("recipientId") || "astrologer";
+    const recipientId = searchParams.get("callee") || "astrologer";
     const role = searchParams.get("role") || "callee"; // "caller" or "callee"
 
     const socketRef = useRef(null);
@@ -46,18 +48,17 @@ const VideoPage = () => {
             const socket = socketRef.current;
 
             socket.on("connect", () => {
-                console.log(`✅ Connected to Call Socket ${socket.id} with loggInUser:${loggedInUser} and role:${role}`);
+                console.log(`✅ Connected to Call Socket with ${socket.id} of loggInUser:${loggedInUserName}`);
                 // All peers join the same room
-                socket.emit("join-room", { roomId, recipientId, loggedInUser });
+                socket.emit("join-room", { roomId, recipientId, loggedInUserName });
                 // Send video call request if you are the caller
-                if (role === "caller") {
                     console.log("📞 Sending video call request to", recipientId);
                     socket.emit("video-call-request", {
                         roomId,
                         from: socket.id,
                         to: recipientId,
+                        username: loggedInUserName
                     });
-                }
             });
 
             // When the other party (caller/callee) joins, if you are the caller, start the call.
@@ -71,25 +72,25 @@ const VideoPage = () => {
                 }
             });
 
-            socket.on("offer", async ({ offer, candidates, from }) => {
-                if (role === "callee") {
-                    await createPeer(false, from);
-                    await peerConnection.current.setRemoteDescription(offer);
-                    remoteDescSet.current = true;
+            socket.on("offer", async ({ offer,iceCandidates, roomId, calleeId }) => {
+                console.log(`Received offer from ${calleeId} in room ${roomId}`);
+                console.log(`type of iceCandidates is ${typeof (iceCandidates)}`)
+                await createPeer(false, calleeId);
+                await peerConnection.current.setRemoteDescription(offer);
+                remoteDescSet.current = true;
 
-                    // Add all received ICE candidates
-                    for (const candidate of candidates) {
-                        try {
-                            await peerConnection.current.addIceCandidate(candidate);
-                        } catch (err) {
-                            console.error("❌ Failed to add ICE candidate", err);
-                        }
+                // Add all received ICE candidates
+                for (const candidate of iceCandidates) {
+                    try {
+                        await peerConnection.current.addIceCandidate(candidate);
+                    } catch (err) {
+                        console.error("❌ Failed to add ICE candidate", err);
                     }
-
-                    const answer = await peerConnection.current.createAnswer();
-                    await peerConnection.current.setLocalDescription(answer);
-                    socket.emit("answer", { answer, to: from });
                 }
+
+                const answer = await peerConnection.current.createAnswer();
+                await peerConnection.current.setLocalDescription(answer);
+                socket.emit("answer", { answer, to: calleeId });
             });
 
             socket.on("answer", async ({ answer, from }) => {
