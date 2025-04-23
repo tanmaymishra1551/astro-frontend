@@ -43,7 +43,7 @@ function HomePage() {
                 <div className="flex flex-col items-center">
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                         <img
-                            src="/public/horoscope-993144_640.jpg"
+                            src="/horoscope-993144_640.jpg"
                             alt="Service 1"
                             className="w-full h-full object-cover"
                         />
@@ -55,7 +55,7 @@ function HomePage() {
                 <div className="flex flex-col items-center">
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                         <img
-                            src="/public/tarot-991041_640.jpg"
+                            src="/tarot-991041_640.jpg"
                             alt="Service 2"
                             className="w-full h-full object-cover"
                         />
@@ -67,7 +67,7 @@ function HomePage() {
                 <div className="flex flex-col items-center">
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                         <img
-                            src="/public/wedding-rituals-7472880_640.jpg"
+                            src="/wedding-rituals-7472880_640.jpg"
                             alt="Service 3"
                             className="w-full h-full object-cover"
                         />
@@ -79,7 +79,7 @@ function HomePage() {
                 <div className="flex flex-col items-center" onClick={() => navigate("/voice")} style={{ cursor: "pointer" }}>
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                         <img
-                            src="/public/chat-2389223_640.png"
+                            src="/chat-2389223_640.png"
                             alt="Service 3"
                             className="w-full h-full object-cover"
                         />
@@ -91,7 +91,7 @@ function HomePage() {
                 <div className="flex flex-col items-center" onClick={() => navigate("/video")} style={{ cursor: "pointer" }}>
                     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                         <img
-                            src="/public/call.png"
+                            src="/call.png"
                             alt="Service 3"
                             className="w-full h-full object-cover"
                         />
@@ -137,7 +137,7 @@ function HomePage() {
                         loop
                         muted
                     >
-                        <source src="/public/astoWheel.mp4" type="video/mp4" />
+                        <source src="/astoWheel.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
                 </div>
@@ -151,7 +151,7 @@ function HomePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 px-4">
                     {/* Card 1 */}
                     <div className="bg-[#1e0836] rounded-lg p-4">
-                        <img src="/public/asto1.png" alt="Astrologer 1" className="w-full h-40 object-cover rounded-lg" />
+                        <img src="/asto1.png" alt="Astrologer 1" className="w-full h-40 object-cover rounded-lg" />
                         <div className="mt-4">
                             <h3 className="text-xl text-yellow-400">Astrologer Name</h3>
                             <p className="text-sm text-gray-400">Rating: ⭐⭐⭐⭐⭐</p>
@@ -161,7 +161,7 @@ function HomePage() {
 
                     {/* Card 2 */}
                     <div className="bg-[#1e0836] rounded-lg p-4">
-                        <img src="/public/asto2.jpg" alt="Astrologer 2" className="w-full h-40 object-cover rounded-lg" />
+                        <img src="/asto2.jpg" alt="Astrologer 2" className="w-full h-40 object-cover rounded-lg" />
                         <div className="mt-4">
                             <h3 className="text-xl text-yellow-400">Astrologer Name</h3>
                             <p className="text-sm text-gray-400">Rating: ⭐⭐⭐⭐⭐</p>
@@ -171,7 +171,7 @@ function HomePage() {
 
                     {/* Card 3 */}
                     <div className="bg-[#1e0836] rounded-lg p-4">
-                        <img src="/public/asto3.jpg" alt="Astrologer 3" className="w-full h-40 object-cover rounded-lg" />
+                        <img src="/asto3.jpg" alt="Astrologer 3" className="w-full h-40 object-cover rounded-lg" />
                         <div className="mt-4">
                             <h3 className="text-xl text-yellow-400">Astrologer Name</h3>
                             <p className="text-sm text-gray-400">Rating: ⭐⭐⭐⭐⭐</p>

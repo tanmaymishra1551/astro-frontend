@@ -125,8 +125,8 @@ const CalleeVideoPage = () => {
         });
 
         // Listen for answer
-        socketRef.current.on('answer', async ({ answer, iceCandidates }) => {
-            console.log('Received answer ${answer} with ICE candidates ${iceCandidates');
+        socketRef.current.on('answer', async ({ answer, iceCandidates, from }) => {
+            console.log(`Received answer ${answer} with ICE candidates ${iceCandidates} from ${from}`);
             await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
             
             // Process ICE candidates sent with the answer
