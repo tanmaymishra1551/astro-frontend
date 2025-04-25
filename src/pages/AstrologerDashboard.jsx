@@ -46,17 +46,42 @@ const AstrologerDashboard = () => {
                 const socket = socketRef.current;
 
                 socket.on("connect", () => {
-                    console.log("✅ Connected to WebSocket");
-                    setIsConnected(true);
+                    console.log("✅ Connected to WebSocket from ast dashboard");
+                    setIsConnected(true); //Need to find why used
                     socket.emit("toggle-online-visibility", { id: astrologerId, showOnline: true });
                     socket.emit("joinAstrologer", { astrologerId, isAstrologer: true });
-                    socket.emit("joinRoom", { roomId: astrologerId });
+                    socket.emit("joinroom", { roomId: astrologerId });
                     socket.emit("getUnreadMessages", { astrologerId });
                 });
 
                 socket.on("connect_error", (err) => {
                     console.error("❌ WebSocket error:", err);
                     setIsConnected(false);
+                });
+
+                socket.on("receiveMessage", (message) => {
+                    console.log("📩 receiveMessage", message);
+                    toast.success("New message received");
+                    setUnreadMessages((prev) => [...prev, message]);
+                });
+
+                socket.on("newMessage", (data) => {
+                    // console.log("🔔 newMessageNotification", data);
+                    toast(`New message from ${data.from}`);
+                    setUnreadMessages((prev) => [...prev, data]);
+                });
+
+                socket.on("loadUnreadMessages", (data) => {
+                    console.log("📥 loadUnreadMessages", data);
+                    setUnreadMessages(data);
+                    if (data.length > 0) {
+                        toast.custom(
+                            <div className="bg-[#1e0138] text-white px-4 py-3 rounded shadow-md border border-yellow-500">
+                                📩 You have {data.length} unread message{data.length > 1 ? 's' : ''}
+                            </div>,
+                            { duration: 3000 }
+                        );
+                    }
                 });
 
                 socket.on("disconnect", () => {
@@ -188,17 +213,20 @@ const AstrologerDashboard = () => {
 
     const handleReply = (message) => {
         // console.log(`Message is ${message}`)
+        const messageId = message._id;
         const senderId = message.senderId;
         if (socketRef.current && message.roomId) {
             socketRef.current.emit("joinRoom", { roomId: message.roomId });
+            socketRef.current.emit("markAsRead", { messageId });
             navigate(`/chat/${message.roomId}`, { state: { senderId } });
             setIsNotificationOpen(false);
         }
     };
 
     const handleMarkAsRead = (messageId) => {
+        console.log(`message id is ${messageId}`)
         setUnreadMessages((prev) => prev.filter((msg) => msg._id !== messageId));
-        socket.emit("markAsRead", { messageId });
+        socketRef.current.emit("markAsRead", { messageId });
     };
 
     const nextSlide = () => setIndex((prev) => (prev + 1) % clients.length);

@@ -22,7 +22,7 @@ export const useSocket = (astrologerId) => {
 
         const socket = socketRef.current;
 
-        socket.on("connect", () => console.log("Connected to WebSocket"));
+        socket.on("connect", () => console.log("Connected to WebSocket from user side useSocket"));
         socket.on("connect_error", (err) => console.error("WebSocket connection error:", err));
 
         socket.on("receiveMessage", (messageData) => {
