@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useClients } from "../hooks/useClients.jsx";
 import ClientCard from "../components/ClientCard.jsx";
 import Profile from "./ProfilePage.jsx";
+import { formatToUserLocalTime } from '../util/dateFormatter.js';
 
 const AstrologerDashboard = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -186,6 +187,7 @@ const AstrologerDashboard = () => {
     }, [astrologerId, loggedInToken, navigate]);
 
     const handleReply = (message) => {
+        // console.log(`Message is ${message}`)
         const senderId = message.senderId;
         if (socketRef.current && message.roomId) {
             socketRef.current.emit("joinRoom", { roomId: message.roomId });
@@ -196,7 +198,7 @@ const AstrologerDashboard = () => {
 
     const handleMarkAsRead = (messageId) => {
         setUnreadMessages((prev) => prev.filter((msg) => msg._id !== messageId));
-        // Optional: socket.emit("markAsRead", { messageId });
+        socket.emit("markAsRead", { messageId });
     };
 
     const nextSlide = () => setIndex((prev) => (prev + 1) % clients.length);
@@ -314,10 +316,10 @@ const AstrologerDashboard = () => {
                                     <div key={msg._id} className="bg-[#2c024b] p-3 rounded-lg space-y-2">
                                         <div className="flex justify-between items-center">
                                             <div>
-                                                <p className="text-yellow-400 font-medium">{msg.senderId}</p>
+                                                <p className="text-yellow-400 font-medium">{msg.fullname}</p>
                                                 <p className="text-sm text-gray-300">{msg.message}</p>
                                             </div>
-                                            <span className="text-xs text-gray-400">{msg.timestamp}</span>
+                                            <span className="text-xs text-gray-400">{formatToUserLocalTime(msg.timestamp)}</span>
                                         </div>
                                         <div className="flex gap-2">
                                             <button
