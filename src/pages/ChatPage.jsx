@@ -35,7 +35,7 @@ const useChat = (roomId, senderID, receiverID) => {
 
         // MESSAGE GETTING FROM SERVER
         socketRef.current.on('receiveMessage', (data) => {
-            console.log(`Receive message is  ${JSON.stringify(data)}`);
+            // console.log(`Receive message is  ${JSON.stringify(data)}`);
             if (data.senderId !== senderID) {
                 toast.info('New message received');
                 setMessages((prev) => [...prev, data]);
@@ -66,6 +66,8 @@ const useChat = (roomId, senderID, receiverID) => {
 
 // Chat Page Component
 const ChatPage = () => {
+    const messagesEndRef = useRef(null);
+
     const location = useLocation();
     const astrologerIdFromBooking = location.state?.astrologerId; // role: user
     const astrologerIdFromAstDash = location.state?.senderId;                    // role:astrologer
@@ -87,6 +89,13 @@ const ChatPage = () => {
     // console.log(`Message is ${JSON.stringify(messages)}`)
     // File Upload Hook
     const { selectedFile, previewUrl, handleFileChange, uploadFile } = useFileUpload();
+
+    // Auto scroll when messages change
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages]);
 
     return (
         <>
@@ -122,7 +131,7 @@ const ChatPage = () => {
                     {messages.map((msg, index) => (
                         <div key={index} className="mb-2 p-2 bg-gray-100 rounded">
                             <p className="text-sm text-gray-600">
-                                <span className="font-bold">{msg.senderID}</span> at{" "}
+                                <span className="font-bold">{msg.loggedInFullname}</span> at{" "}
                                 {new Date(msg.timestamp).toLocaleTimeString()}
                             </p>
                             {msg.message && <p>{msg.message}</p>}
@@ -136,6 +145,8 @@ const ChatPage = () => {
                             )}
                         </div>
                     ))}
+                    {/* Invisible div to anchor scroll-to-bottom */}
+                    <div ref={messagesEndRef} />
                 </div>
 
                 {/* Input and File Upload */}

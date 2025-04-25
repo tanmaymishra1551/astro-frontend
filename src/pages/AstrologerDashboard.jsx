@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useClients } from "../hooks/useClients.jsx";
 import ClientCard from "../components/ClientCard.jsx";
 import Profile from "./ProfilePage.jsx";
+import { formatToUserLocalTime } from '../util/dateFormatter.js';
 
 
 const AstrologerDashboard = () => {
@@ -56,19 +57,19 @@ const AstrologerDashboard = () => {
 
         socket.on("newMessage", (data) => {
             // console.log("🔔 newMessageNotification", data);
-            toast(`New message from User ${data.senderId}`);
+            toast(`New message from ${data.from}`);
             setUnreadMessages((prev) => [...prev, data]);
         });
 
         socket.on("loadUnreadMessages", (data) => {
-            console.log("📥 loadUnreadMessages", data);
+            // console.log("📥 loadUnreadMessages", data);
             setUnreadMessages(data);
             if (data.length > 0) {
                 toast.custom(
                     <div className="bg-[#1e0138] text-white px-4 py-3 rounded shadow-md border border-yellow-500">
                         📩 You have {data.length} unread message{data.length > 1 ? 's' : ''}
                     </div>,
-                    { duration: 5000 }
+                    { duration: 2000 }
                 );
             }
         });
@@ -237,10 +238,10 @@ const AstrologerDashboard = () => {
                                     <div key={msg._id} className="bg-[#2c024b] p-3 rounded-lg space-y-2">
                                         <div className="flex justify-between items-center">
                                             <div>
-                                                <p className="text-yellow-400 font-medium">{msg.senderId}</p>
+                                                <p className="text-yellow-400 font-medium">{msg.fullname}</p>
                                                 <p className="text-sm text-gray-300">{msg.message}</p>
                                             </div>
-                                            <span className="text-xs text-gray-400">{msg.timestamp}</span>
+                                            <span className="text-xs text-gray-400">{formatToUserLocalTime(msg.timestamp)}</span>
                                         </div>
                                         <div className="flex gap-2">
                                             <button
