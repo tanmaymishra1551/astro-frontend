@@ -18,6 +18,7 @@ const useChat = (roomId, senderID, receiverID) => {
     const socketRef = useRef();
     const loggedIn = useSelector((state) => state.auth);
     const loggedInToken = loggedIn.loggedIn.accessToken;
+    const loggedInFullname = loggedIn.loggedIn.fullname;
     // console.log(`Logged in user token ${loggedInToken}`)
     useEffect(() => {
         if (!roomId) return;
@@ -30,11 +31,11 @@ const useChat = (roomId, senderID, receiverID) => {
 
         socketRef.current.on("connect", () => console.log("Connected to WebSocket"));
         socketRef.current.on("connect_error", (err) => console.error("WebSocket connection error:", err));
-        socketRef.current.emit('joinRoom', { roomId });
+        socketRef.current.emit('join-room', { roomId });
 
         // MESSAGE GETTING FROM SERVER
         socketRef.current.on('receiveMessage', (data) => {
-            // console.log(`Receive message is  ${JSON.stringify(data)}`);
+            console.log(`Receive message is  ${JSON.stringify(data)}`);
             if (data.senderId !== senderID) {
                 toast.info('New message received');
                 setMessages((prev) => [...prev, data]);
@@ -49,9 +50,10 @@ const useChat = (roomId, senderID, receiverID) => {
         // console.log(`Message in sendMessage is ${message}`)
         const messageData = {
             roomId,
-            senderID,
-            receiverID,
             message,
+            senderID,
+            loggedInFullname,
+            receiverID,
             timestamp: Date.now(),
         };
         // console.log(`Message that is send to server is ${JSON.stringify(messageData)}`)

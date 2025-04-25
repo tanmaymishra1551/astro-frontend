@@ -81,6 +81,7 @@ const AstrologerDashboard = () => {
     const socket = socketRef.current;
 
     const handleReply = (message) => {
+        // console.log(`Message is ${message}`)
         const senderId = message.senderId;
         if (socket && message.roomId) {
             socket.emit("joinRoom", { roomId: message.roomId });
@@ -91,7 +92,7 @@ const AstrologerDashboard = () => {
 
     const handleMarkAsRead = (messageId) => {
         setUnreadMessages((prev) => prev.filter((msg) => msg._id !== messageId));
-        // Optional: socket.emit("markAsRead", { messageId });
+        socket.emit("markAsRead", { messageId });
     };
 
     const nextSlide = () => setIndex((prev) => (prev + 1) % clients.length);
